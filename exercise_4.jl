@@ -1,37 +1,29 @@
 using HorizonSideRobots
-function cross_diag!(robot)
-    num_steps_Nord = diag_p_West!(robot, Nord)
-    diag_marker_Ost!(robot, Sud)
-    diag_p_West!(robot, Nord)
-    diag!(robot, Sud, num_steps_Nord)
-    num_steps_Sud = diag_p_West!(robot, Sud)
-    diag_marker_Ost!(robot, Nord)
-    diag_p_West!(robot, Sud)
-    diag!(robot, Nord, num_steps_Sud)
-end
 
-function diag_p_West!(robot, side)
-    n = 0
-    while (!isborder(robot, West)) && (!isborder(robot, side))
-        move!(robot, West)
-        move!(robot, side)
-        n += 1
-    end
-    return n
-end
-
-function diag_marker_Ost!(robot, side)
-    putmarker!(robot)
-    while !isborder(robot, Ost) && !isborder(robot, side)
-        move!(robot, side)
-        move!(robot, Ost)
-        putmarker!(robot)
+function xcross!(robot)
+    for s in ((Nord, Ost), (Sud, Ost), (Sud, West), (Nord, West))
+        n = xmark_direct!(robot, s)
+        xmove!(robot, inverse.(s), n)
     end
 end
 
-function diag!(robot, side, num_steps)
+function xmark_direct!(robot, side::NTuple{2, HorizonSide})
+        n=0
+        while !(isborder(robot, side[1]) || isborder(robot, side[2]))
+            move!(robot, side[1])
+            move!(robot, side[2])
+            putmarker!(robot)
+            n+=1
+        end
+        return n
+end
+function inverse(side)
+    return HorizonSide(((Int(side))+2)%4)
+end 
+    
+function xmove!(robot, side::NTuple{2, HorizonSide}, num_steps::Integer)
     for _ in 1:num_steps
-        move!(robot, side)
-        move!(robot, Ost)
+        move!(robot, side[1])
+        move!(robot, side[2])
     end
 end
